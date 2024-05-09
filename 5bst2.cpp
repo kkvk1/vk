@@ -1,111 +1,114 @@
-#include <iostream>
-#include <stack>
+#include<iostream>
+#include<algorithm>
 using namespace std;
 
-class node {
-public:
-    node *left;
-    node *right;
-    char ch;
+struct node {
+    int data;
+    node* left;
+    node* right;
 };
 
-bool isOperator(char c) {
-    return (c == '+' || c == '-' || c == '*' || c == '/');
+node* createNode(int value) {
+    node* newNode = new node;
+    newNode->data = value;
+    newNode->left = nullptr;
+    newNode->right = nullptr;
+    return newNode;
 }
 
-node *newNode(char c) {
-    node *temp = new node;
-    temp->left = NULL;
-    temp->right = NULL;
-    temp->ch = c;
-    return temp;
-}
-
-node *createTree(string expression) {
-    node *t, *t1, *t2;
-    stack<node *> st;
-
-    for (int i = expression.length() - 1; i >= 0; i--) {
-        if (!isOperator(expression[i])) {
-            t = newNode(expression[i]);
-            st.push(t);
+void insert(node*& root, node* temp) {
+    if (root == nullptr) {
+        root = temp;
+    } else {
+        if (root->data > temp->data) {
+            if (root->left == nullptr) {
+                root->left = temp;
+            } else {
+                insert(root->left, temp);
+            }
+        } else if (temp->data > root->data) {
+            if (root->right == nullptr) {
+                root->right = temp;
+            } else {
+                insert(root->right, temp);
+            }
         } else {
-            t = newNode(expression[i]);
-            t1 = st.top();
-            st.pop();
-            t2 = st.top();
-            st.pop();
-            t->left = t1;
-            t->right = t2;
-            st.push(t);
+            cout << "Duplicate element not inserted" << endl;
+            delete temp;
         }
     }
-
-    t = st.top();
-    return t;
 }
 
-void postOrder(node *root) {
-    if (root == NULL)
-        return;
-
-    stack<node *> st;
-    stack<char> output;
-
-    st.push(root);
-
-    while (!st.empty()) {
-        node *curr = st.top();
-        st.pop();
-        output.push(curr->ch);
-
-        if (curr->left)
-            st.push(curr->left);
-        if (curr->right)
-            st.push(curr->right);
-    }
-
-    while (!output.empty()) {
-        cout << output.top() << "\t";
-        output.pop();
+void display(node* root) {
+    if (root != nullptr) {
+        display(root->left);
+        cout << root->data << " ";
+        display(root->right);
     }
 }
 
-void deleteTree(node *root) {
-    if (root == NULL)
-        return;
 
-    stack<node *> st;
-    st.push(root);
-
-    while (!st.empty()) {
-        node *curr = st.top();
-        st.pop();
-
-        if (curr->left)
-            st.push(curr->left);
-        if (curr->right)
-            st.push(curr->right);
-
-        cout << "Deleting: " << curr->ch << endl;
-        delete curr;
+int minValue(node* root) {
+    while (root->left != nullptr) {
+        root = root->left;
     }
+    return root->data;
+}
+
+void swapNodes(node* root) {
+    if (root == nullptr) {
+        return;
+    }
+
+    swap(root->left, root->right);
+    swapNodes(root->left);
+    swapNodes(root->right);
 }
 
 int main() {
-    string expression;
-    cout << "Enter the Prefix Expression: ";
-    cin >> expression;
+    node* root = nullptr;
+    int choice;
 
-    node *root_node = createTree(expression);
+    do {
+        cout << "\nMenu\n";
+        cout << "1) Insert  \n2) Display    \n3) Minimum Data Value  \n4) Swap  \n5) Exit\n";
+        cout << "Enter your choice: ";
+        cin >> choice;
 
-    cout << "\nTree Created successfully" << endl;
-    cout << "\nPost-order Traversal:" << endl;
-    postOrder(root_node);
+        switch (choice) {
+            case 1: {
+                int value;
+                cout << "Enter the value to insert: ";
+                cin >> value;
+                node* newNode = createNode(value);
+                insert(root, newNode);
+                break;
+            }
+            case 2: {
+                cout << "BST Elements: ";
+                display(root);
+                cout << endl;
+                break;
+            }
 
-    cout << "\n\nDeleting Tree...." << endl;
-    deleteTree(root_node);
-    cout << "Deleted Successfully" << endl;
+            case 3: {
+                int minVal = minValue(root);
+                cout << "Minimum data value in the tree: " << minVal << endl;
+                break;
+            }
+            case 4: {
+                swapNodes(root);
+                cout << "Tree nodes swapped." << endl;
+                break;
+            }
+            case 5: {
+                cout << "Exiting the program." << endl;
+                break;
+            }
+            default:
+                cout << "Invalid choice. Please enter a valid option." << endl;
+        }
+    } while (choice != 5);
 
     return 0;
 }
